@@ -20,7 +20,8 @@ function GameSetting(props) {
     setAnswerCorrect,
     setCurrentQuestionOrder,
     setGameDisplayStart,
-    setOpenGameResultWindow
+    setOpenGameResultWindow,
+    setGameStart
   } = props;
 
   const [userNameAlready, setUserNameAlready] = useState(false);
@@ -29,7 +30,7 @@ function GameSetting(props) {
   );
   const [userCategoryChoice, setUserCategoryChoice] = useState("placeholder");
   const [userTypeChoice, setUserTypeChoice] = useState("placeholder");
-  const [existingUser, setExistingUser] = useState(false);
+  const [existingUser, setExistingUser] = useState('');
   const [questionsAndAnswersFromApi, setQuestionsAndAnswersFromApi] = useState(
     ""
   );
@@ -49,7 +50,7 @@ function GameSetting(props) {
   };
 
   const ExistingUserClick = () => {
-    setExistingUser(false);
+    setExistingUser('false');
   };
 
   useEffect(() => {
@@ -112,13 +113,15 @@ function GameSetting(props) {
         const data = response.val();
         const dataConvertToArray = Object.keys(data);
         if (String(dataConvertToArray).indexOf(userName) !== -1) {
-          setExistingUser(true);
+          setExistingUser('true');
           if (continueGame) {
             // Pass existing data to GameDisplay.js
             setUserQuestions(data[userName].questions);
             setUserCorrectNumber(data[userName].correctNumber);
             setUserAnsweredNumber(data[userName].answeredNumber);
           }
+        } else {
+          setExistingUser('false');
         }
       });
     }
@@ -132,7 +135,7 @@ function GameSetting(props) {
   ]);
 
   useEffect(() => {
-    if (questionSettingAlready && !existingUser) {
+    if (questionSettingAlready && existingUser === 'false') {
       const triviaGameUrl = `https://opentdb.com/api.php?amount=${userNumberChoice}&category=${userCategoryChoice}&difficulty=${userDifficultyChoice}&type=${userTypeChoice}`;
       axios({
         url: triviaGameUrl,
@@ -142,22 +145,22 @@ function GameSetting(props) {
         const numberUserNumberChoice = parseInt(userNumberChoice, 10);
         if (response.data.results.length !== numberUserNumberChoice) {
           alert("Meet your requirements I cannot. Return home young Jedi.");
+          setExistingUser('false');
           setGameResultShows(0);
           setAnswerCorrect(0);
           setCurrentQuestionOrder(0);
           setQuestionSettingAlready(false);
           setGameDisplayStart(false);
           setOpenGameResultWindow(false);
-          setExistingUser(false);
-          setUserNameAlready(true);
-        }
+        } else {
 
         if (questionsAndAnswersFromApi === "") {
           setQuestionsAndAnswersFromApi(response.data.results);
         }
-        if (!existingUser) {
+        if (existingUser === 'false') {
           setUserQuestions(questionsAndAnswersFromApi);
         }
+      }
       });
     }
   }, [
@@ -193,13 +196,13 @@ function GameSetting(props) {
           </form>
         ) : null}
         {questionsAndAnswersFromApi ? null : questionSettingAlready ? null : userNameAlready &&
-          existingUser ? (
+          existingUser === 'true' ? (
           <div className="continueOrNewGame">
             <button onClick={ContinueGameClick}>Continue your game?</button>
             <button onClick={ExistingUserClick}>Start a new game!</button>
           </div>
         ) : null}
-        {questionSettingAlready ? null : !existingUser && userNameAlready ? (
+        {questionSettingAlready ? null : existingUser === 'false' && userNameAlready ? (
           <div className="dropdownSettingSection">
             <form onSubmit={formSubmission}>
               {/* # of questions selected */}
