@@ -21,7 +21,6 @@ function GameSetting(props) {
     setCurrentQuestionOrder,
     setGameDisplayStart,
     setOpenGameResultWindow,
-    setGameStart
   } = props;
 
   const [userNameAlready, setUserNameAlready] = useState(false);
